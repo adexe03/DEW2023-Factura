@@ -187,9 +187,11 @@
             }
 
             const tasa = parseFloat(document.getElementById("tasa").innerText);
+            // Se calcula el impuesto que tienen los productos
             const impuesto = (subtotal * (tasa / 100)).toFixed(2);
 
             document.getElementById("subtotal").innerText = subtotal.toFixed(2) + '€';
+            // Se suma el subtotal mas los impuesto para obtener el total
             document.getElementById("total").innerText = (parseFloat(subtotal) + parseFloat(impuesto)).toFixed(2) + '€';
             document.getElementById("impuesto").innerText = impuesto + '€';
         }
