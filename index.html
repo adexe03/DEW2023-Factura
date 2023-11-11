@@ -1,77 +1,199 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
-  <style>
-    table,
-    th,
-    th {
-      border: 1px solid blue;
-      border-collapse: collapse;
-      padding: 3px 10px;
-    }
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Factura</title>
+    <style>
+        table,
+        td,
+        th {
+            border: 1px solid blue;
+            border-collapse: collapse;
+            padding: 5px 5px;
+        }
 
-    thead {
-      background-color: blue;
-      color: white;
-    }
-  </style>
+        thead {
+            background-color: rgb(2, 0, 137);
+            color: white;
+        }
+
+        tbody {
+            background-color: white;
+            color: black;
+            text-align: right;
+        }
+
+        tfoot {
+            background-color: rgb(173, 216, 231);
+            color: rgb(0, 0, 0);
+        }
+
+        #total {
+            font-weight: bolder;
+            text-align: right;
+        }
+
+        #tasa {
+            color: red;
+            text-align: right;
+            font-weight: bolder;
+        }
+
+        #subtotal {
+            text-align: right;
+        }
+
+        .eliminar-button {
+            font-size: 16px;
+            color: red;
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
 </head>
 
 <body>
-  <h1>Factura</h1>
-  <div>
     <center>
-      <form action="" method="post">
+        <form id="facturaForm">
+            <p>
+                Concepto
+                <input type="text" id="concept" />
+            </p>
+            <p>
+                Cantidad
+                <input type="number" id="amount" />
+            </p>
+            <p>
+                Precio
+                <input type="number" id="price" step="0.01" />€
+            </p>
+            <p>
+                <button type="button" id="insert">Insertar</button>
+            </p>
+        </form>
+
+        <table id="facturaTable">
+            <thead>
+                <tr>
+                    <th>Concepto</th>
+                    <th>Cantidad</th>
+                    <th>Precio Unitario</th>
+                    <th>Precio Total</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="3" style="text-align: right">Subtotal</th>
+                    <td id="subtotal">0.00</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <th style="text-align: right;">Tasa:</th>
+                    <td id="tasa">0%</td>
+                    <th style="text-align: right">Impuesto:</th>
+                    <td id="impuesto" style="text-align: right;">0.00</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <th colspan="3" style="text-align: right">TOTAL</th>
+                    <td id="total">0.00</td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+
         <p>
-          Concepto
-          <input type="text">
+            <button type="button" onclick="selectTasa(5)">Tasa 5%</button>
+            <button type="button" onclick="selectTasa(15)">Tasa 15%</button>
+            <button type="button" onclick="selectTasa(30)">Tasa 30%</button>
         </p>
-        <p>
-          Cantidad
-          <input type="number">
-        </p>
-        <p>
-          Precio
-          <input type="number" step="0.01">€
-        </p>
-        <p>
-          <input type="submit" value="Insertar">
-        </p>
-      </form>
-      <table>
-        <thead>
-          <tr>
-            <th>Concepto</th>
-            <th>Cantidad</th>
-            <th>Precio Unitario</th>
-            <th>Precio total</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-        </tbody>
-        <tfoot>
-          <tr>
-            <th colspan="3" style="text-align: right;">Subtotal</th>
-            <th>1</th>
-            <th></th>
-          </tr>
-          <tr>
-            <th style="text-align: right;">Tasa:</th>
-            <th style="text-align: right;">30</th>
-            <th style="text-align: right;">Impuestos:</th>
-            <th>0</th>
-            <th></th>
-          </tr>
-        </tfoot>
-      </table>
-      <div></div>
     </center>
-  </div>
+
+    <script>
+        document.getElementById("insert").addEventListener("click", insert);
+
+        function insert() {
+            const table = document.getElementById("facturaTable");
+            const concept = document.getElementById("concept").value;
+            const amount = document.getElementById("amount").value;
+            const price = document.getElementById("price").value;
+
+            // Comprobación para saber si los inputs estan vacíos
+            if (!concept || !amount || !price) {
+                alert("Todos los campos tienen que estar rellenos para continuar");
+                return;
+            }
+
+            const tbody = table.querySelector("tbody");
+
+            const newRow = document.createElement("tr");
+
+            // Se crean las celdas correspondientes para cada th
+            const conceptCell = document.createElement("td");
+            const amountCell = document.createElement("td");
+            const priceCell = document.createElement("td");
+            const totalPriceCell = document.createElement("td");
+            const removeCell = document.createElement("td");
+
+            // Se pone el contenido obtenido de los inputs
+            conceptCell.innerText = concept;
+            amountCell.innerText = amount;
+            priceCell.innerText = price + '€';
+            const totalPrice = (parseFloat(price) * parseInt(amount)).toFixed(2);
+            totalPriceCell.innerText = totalPrice + '€';
+
+            // Boton para eliminar la fila
+            const eliminarButton = document.createElement("button");
+            eliminarButton.innerText = "X";
+            eliminarButton.className = "eliminar-button";
+            eliminarButton.onclick = function () {
+                tbody.removeChild(newRow);
+                updateTotals();
+            };
+
+            // Añadir a la fila las celdas
+            removeCell.appendChild(eliminarButton);
+            newRow.appendChild(conceptCell);
+            newRow.appendChild(amountCell);
+            newRow.appendChild(priceCell);
+            newRow.appendChild(totalPriceCell);
+            newRow.appendChild(removeCell);
+            tbody.appendChild(newRow);
+            // Si la fila es par el color de fondo sera cyan pero si la fila es impar sera blanco
+            newRow.style.backgroundColor = tbody.children.length % 2 === 0 ? 'lightcyan' : 'white';
+            updateTotals();
+        }
+
+        function selectTasa(tasa) {
+            // Se cambia el contenido de la celda según el boton de tasa que toquemos
+            document.getElementById("tasa").innerText = tasa + "%";
+            updateTotals();
+        }
+
+        function updateTotals() {
+            const tbody = document.getElementById("facturaTable").getElementsByTagName("tbody")[0];
+            const tfoot = document.getElementById("facturaTable").getElementsByTagName("tfoot")[0];
+            const rows = tbody.getElementsByTagName("tr");
+            let subtotal = 0;
+
+            for (let i = 0; i < rows.length; i++) {
+                const cells = rows[i].getElementsByTagName("td");
+                subtotal += parseFloat(cells[3].innerText);
+            }
+
+            const tasa = parseFloat(document.getElementById("tasa").innerText);
+            const impuesto = (subtotal * (tasa / 100)).toFixed(2);
+
+            document.getElementById("subtotal").innerText = subtotal.toFixed(2) + '€';
+            document.getElementById("total").innerText = (parseFloat(subtotal) + parseFloat(impuesto)).toFixed(2) + '€';
+            document.getElementById("impuesto").innerText = impuesto + '€';
+        }
+    </script>
 </body>
 
 </html>
